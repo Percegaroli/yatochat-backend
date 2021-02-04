@@ -5,19 +5,24 @@ import { hash } from 'bcrypt';
 import { NewUserDTO } from '../DTO/NewUserDTO';
 import { User, UserDocument } from '../schema';
 import { UserResumeDTO } from '../DTO/UserResumeDTO';
+import { JwtManipulationProvider } from '../../auth/provider';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly jwtManipulationProvider: JwtManipulationProvider,
+  ) {}
 
-  getUser(): string {
-    return 'Hello World!';
-  }
+  createUserAndLogin = async (newUserDTO: NewUserDTO) => {
+    const newUser = await this.createNewUser(newUserDTO);
+    return this.jwtManipulationProvider.createJwt({ id: newUser._id });
+  };
 
   async createNewUser(newUserDTO: NewUserDTO) {
     const newUser = new this.userModel(newUserDTO);
     newUser.password = await this.hashPassword(newUser.password);
-    newUser.save();
+    return newUser.save();
   }
 
   private hashPassword(password: string) {

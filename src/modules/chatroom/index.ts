@@ -4,6 +4,7 @@ import { Chatroom, ChatroomSchema } from './schema/Chatroom';
 import { ChatroomController } from './controller';
 import { ChatroomService } from './service';
 import { UserModule } from '../user';
+import { AuthModule } from '../auth';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { UserModule } from '../user';
       { name: Chatroom.name, schema: ChatroomSchema },
     ]),
     UserModule,
+    AuthModule,
   ],
   controllers: [ChatroomController],
   providers: [ChatroomService],

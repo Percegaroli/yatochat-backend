@@ -1,12 +1,13 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { Chatroom } from '../../chatroom/schema/Chatroom';
 
 export type UserDocument = User & Document;
 
 @Schema()
 export class User {
   @Prop()
-  id: number;
+  id: string;
 
   @Prop({ minlength: 3, required: true })
   name: string;
@@ -19,6 +20,16 @@ export class User {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop({
+    type: [
+      {
+        type: Types.ObjectId,
+        name: Chatroom.name,
+      },
+    ],
+  })
+  chatrooms: Array<Chatroom>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

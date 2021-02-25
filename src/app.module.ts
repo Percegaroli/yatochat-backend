@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import MongoConnection from './config/database';
-import { UserModule } from './modules/user';
+import { Modules } from './modules';
 import { EnvConfig } from './config/configModule';
 
 @Module({
-  imports: [EnvConfig, MongoConnection, UserModule],
+  imports: [EnvConfig, MongoConnection, Modules],
 })
 export class AppModule {}

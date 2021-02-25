@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Chatroom, ChatroomSchema } from './schema/Chatroom';
 import { ChatroomController } from './controller';
@@ -11,11 +11,11 @@ import { AuthModule } from '../auth';
     MongooseModule.forFeature([
       { name: Chatroom.name, schema: ChatroomSchema },
     ]),
-    UserModule,
+    forwardRef(() => UserModule),
     AuthModule,
   ],
   controllers: [ChatroomController],
   providers: [ChatroomService],
-  exports: [ChatroomService],
+  exports: [ChatroomService, MongooseModule],
 })
 export class ChatroomModule {}

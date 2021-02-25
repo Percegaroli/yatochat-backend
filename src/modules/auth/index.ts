@@ -20,6 +20,6 @@ import { UserModule } from '../user';
   ],
   controllers: [AuthController],
   providers: [JwtManipulationProvider, AuthService],
-  exports: [JwtManipulationProvider],
+  exports: [JwtManipulationProvider, AuthService],
 })
 export class AuthModule {}

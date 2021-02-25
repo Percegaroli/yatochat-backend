@@ -7,6 +7,10 @@ import { ChatroomDetailsDTO } from '../DTO/ChatroomDetailsDTO';
 import { NewChatroomDTO } from '../DTO/NewChatroomDTO';
 import { ChatroomDocument, Chatroom } from '../schema/Chatroom';
 import MessageData from 'src/modules/chatSocket/interfaces/MessageData';
+import { Roles } from '../enum/Roles';
+import { UserDocument } from 'src/modules/user/schema';
+import { ChatMember } from '../schema/ChatMember';
+import { GroupMemberDTO } from '../DTO/GroupMemberDTO';
 
 @Injectable()
 export class ChatroomService {
@@ -25,32 +29,38 @@ export class ChatroomService {
   async getChatroomDetails(id: string) {
     this.checkForValidObjectId(id);
     const chatroom = await this.chatroomModel.findById(id).exec();
-    await chatroom.populate('members').execPopulate();
     return this.createChatroomDetailsDTO(chatroom);
   }
 
   async createNewChatroom(newChatroomDTO: NewChatroomDTO) {
-    const creator = this.userService.getUserByEmail(newChatroomDTO.owner_email);
+    const creator = this.userService.getUserById(newChatroomDTO.owner_id);
     const today = new Date();
     const newChatroom = new this.chatroomModel(newChatroomDTO);
     newChatroom.createdAt = today;
-    newChatroom.members.push(await creator);
+    const user = await creator;
+    newChatroom.members.push({
+      user: user._id,
+      role: Roles.OWNER,
+      joinedAt: today,
+    });
+    this.userService.addChatroom(newChatroom, user);
     return newChatroom.save();
   }
 
   async saveNewMessage(messageData: MessageData) {
-    const { room, message, sender } = messageData;
-    this.checkForValidObjectId(room);
-    const chatroom = await this.chatroomModel.findById(room);
+    const { room_id, message, user_id } = messageData;
+    this.checkForValidObjectId(room_id);
+    const chatroom = await this.chatroomModel.findById(room_id);
     chatroom.messages.push({
       date: new Date(),
       message,
-      owner_id: sender,
+      user_id: user_id,
     });
     chatroom.save();
   }
 
   checkForValidObjectId(id: string) {
+    console.log(id);
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException({
         code: HttpStatus.BAD_REQUEST,
@@ -71,16 +81,28 @@ export class ChatroomService {
     };
   }
 
-  private createChatroomDetailsDTO(
+  async createChatroomDetailsDTO(
     chatroom: ChatroomDocument,
-  ): ChatroomDetailsDTO {
-    const { members, name, createdAt, messages } = chatroom;
+  ): Promise<ChatroomDetailsDTO> {
+    await chatroom
+      .populate({ path: 'members.user', model: 'User' })
+      .execPopulate();
+    const { members, name, createdAt, messages, _id } = chatroom;
     return {
-      members: members.map((member) =>
-        this.userService.createUserResume(member),
-      ),
+      id: _id,
+      members: members.map((member) => this.createMemberDTO(member)),
       name,
       createdAt,
+      messages,
+    };
+  }
+
+  createMemberDTO(member: ChatMember): GroupMemberDTO {
+    const { user, role, joinedAt } = member;
+    return {
+      user: this.userService.createUserResume(user as UserDocument),
+      role,
+      joinedAt,
     };
   }
 }

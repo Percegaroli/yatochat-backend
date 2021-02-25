@@ -4,9 +4,7 @@ import {
   Injectable,
   Inject,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import JwtRequest from '../interface/JwtRequest';
 import { JwtManipulationProvider } from '../provider';
 
 @Injectable()
@@ -23,7 +21,6 @@ export class JwtGuard implements CanActivate {
     }
     const { authorization } = request.headers;
     const token = authorization.replace('Bearer ', '');
-    console.log(token);
     return this.jwtManipulationProvider.isValidJwt(token);
   }
 }

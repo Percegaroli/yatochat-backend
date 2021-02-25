@@ -1,22 +1,37 @@
-import { Injectable, BadRequestException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  HttpStatus,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { hash } from 'bcrypt';
 import { NewUserDTO } from '../DTO/NewUserDTO';
 import { User, UserDocument } from '../schema';
 import { UserResumeDTO } from '../DTO/UserResumeDTO';
-import { JwtManipulationProvider } from '../../auth/provider';
+import {
+  ChatroomDocument,
+  Chatroom,
+} from 'src/modules/chatroom/schema/Chatroom';
+import { AuthService } from 'src/modules/auth/service';
+import { UserDetailedDTO } from '../DTO/UserDetailedDTO';
+import { ChatroomService } from 'src/modules/chatroom/service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    private readonly jwtManipulationProvider: JwtManipulationProvider,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
+    @Inject(forwardRef(() => ChatroomService))
+    private readonly chatroomService: ChatroomService,
   ) {}
 
   createUserAndLogin = async (newUserDTO: NewUserDTO) => {
     const newUser = await this.createNewUser(newUserDTO);
-    return this.jwtManipulationProvider.createJwt({ id: newUser._id });
+    return this.authService.createLoginResponseDTO(newUser);
   };
 
   async createNewUser(newUserDTO: NewUserDTO) {
@@ -29,14 +44,24 @@ export class UserService {
     return hash(password, 10);
   }
 
-  getUserByEmail(email: string): Promise<UserDocument> {
-    return this.userModel.findOne({ email: email }).exec();
+  addChatroom(chatroom: ChatroomDocument, user: UserDocument) {
+    user.chatrooms.push(chatroom);
+    user.save();
   }
 
-  async getUserResume(id: string) {
+  getUserById(id: string) {
     this.checkForValidObjectId(id);
-    const userDocument = this.userModel.findById(id);
-    return this.createUserResume(await userDocument);
+    return this.userModel.findById(id).exec();
+  }
+
+  async getLoggedUserDetails(id: string) {
+    this.checkForValidObjectId(id);
+    const user = await this.getUserById(id);
+    return this.createUserDetailedDTO(user);
+  }
+
+  getUserByEmail(email: string): Promise<UserDocument> {
+    return this.userModel.findOne({ email: email }).exec();
   }
 
   checkForValidObjectId(id: string) {
@@ -48,9 +73,31 @@ export class UserService {
     }
   }
 
-  public createUserResume(userDocument: User): UserResumeDTO {
-    const { email, name, lastName } = userDocument;
+  async createUserDetailedDTO(
+    userDocument: UserDocument,
+  ): Promise<UserDetailedDTO> {
+    await userDocument
+      .populate({ path: 'chatrooms', model: Chatroom.name })
+      .execPopulate();
+    console.log(userDocument);
+    const { chatrooms, email, lastName, name, _id } = userDocument;
+    const chatroomDetailsPromise = chatrooms.map((chatroom: ChatroomDocument) =>
+      this.chatroomService.createChatroomDetailsDTO(chatroom),
+    );
+    const chatroomDetailsDTO = await Promise.all(chatroomDetailsPromise);
     return {
+      email,
+      id: _id,
+      name,
+      lastName,
+      chatrooms: chatroomDetailsDTO,
+    };
+  }
+
+  createUserResume(userDocument: UserDocument): UserResumeDTO {
+    const { email, name, lastName, _id } = userDocument;
+    return {
+      id: _id,
       email,
       lastName,
       name,

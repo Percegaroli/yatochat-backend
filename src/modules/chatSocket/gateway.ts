@@ -27,8 +27,8 @@ export class ChatGateway {
     @MessageBody() messageData: MessageData,
     @ConnectedSocket() client: Socket,
   ): Promise<WsResponse<MessageData>> {
-    const { message, room } = messageData;
-    client.to(room).emit(EventEnum.NEW_MESSAGE, message);
+    const { message, room_id } = messageData;
+    client.to(room_id).emit(EventEnum.NEW_MESSAGE, message);
     await this.chatroomService.saveNewMessage(messageData);
     return {
       event: EventEnum.NEW_MESSAGE,

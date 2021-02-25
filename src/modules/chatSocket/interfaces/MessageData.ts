@@ -1,5 +1,5 @@
 export default interface MessageData {
-  room: string;
-  sender: string;
+  room_id: string;
+  user_id: string;
   message: string;
 }

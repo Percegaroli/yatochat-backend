@@ -80,7 +80,14 @@ export class UserService {
       .populate({ path: 'chatrooms', model: Chatroom.name })
       .execPopulate();
     console.log(userDocument);
-    const { chatrooms, email, lastName, name, _id } = userDocument;
+    const {
+      chatrooms,
+      email,
+      lastName,
+      name,
+      _id,
+      groupInvitations,
+    } = userDocument;
     const chatroomDetailsPromise = chatrooms.map((chatroom: ChatroomDocument) =>
       this.chatroomService.createChatroomDetailsDTO(chatroom),
     );
@@ -91,6 +98,7 @@ export class UserService {
       name,
       lastName,
       chatrooms: chatroomDetailsDTO,
+      groupInvitations,
     };
   }
 

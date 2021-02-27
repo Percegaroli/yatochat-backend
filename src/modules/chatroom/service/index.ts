@@ -11,6 +11,7 @@ import { Roles } from '../enum/Roles';
 import { UserDocument } from 'src/modules/user/schema';
 import { ChatMember } from '../schema/ChatMember';
 import { GroupMemberDTO } from '../DTO/GroupMemberDTO';
+import { InviteUserDTO } from '../DTO/InviteUserDTO';
 
 @Injectable()
 export class ChatroomService {
@@ -30,6 +31,21 @@ export class ChatroomService {
     this.checkForValidObjectId(id);
     const chatroom = await this.chatroomModel.findById(id).exec();
     return this.createChatroomDetailsDTO(chatroom);
+  }
+
+  async inviteUser(inviteUserDTO: InviteUserDTO) {
+    const { groupId, invitedById, userInvitedEmail } = inviteUserDTO;
+    const [invitedBy, userInvited, group] = await Promise.all([
+      this.userService.getUserById(invitedById),
+      this.userService.getUserByEmail(userInvitedEmail),
+      this.chatroomModel.findById(groupId),
+    ]);
+    userInvited.groupInvitations.push({
+      groupId: group._id,
+      invitationDate: new Date(),
+      userId: invitedBy._id,
+    });
+    userInvited.save();
   }
 
   async createNewChatroom(newChatroomDTO: NewChatroomDTO) {

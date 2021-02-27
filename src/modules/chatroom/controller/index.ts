@@ -2,6 +2,7 @@ import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
 import { ChatroomService } from '../service';
 import { NewChatroomDTO } from '../DTO/NewChatroomDTO';
 import { JwtGuard } from '../../auth/guard/jwt.guard';
+import { InviteUserDTO } from '../DTO/InviteUserDTO';
 
 @UseGuards(JwtGuard)
 @Controller('chatroom')
@@ -21,5 +22,10 @@ export class ChatroomController {
   @Post()
   async createNewChatroom(@Body() newChatroomDTO: NewChatroomDTO) {
     await this.chatroomService.createNewChatroom(newChatroomDTO);
+  }
+
+  @Post('/invite')
+  inviteUser(@Body() inviteUserDTO: InviteUserDTO) {
+    return this.chatroomService.inviteUser(inviteUserDTO);
   }
 }

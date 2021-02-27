@@ -1,4 +1,3 @@
-import { UserResumeDTO } from '../../user/DTO/UserResumeDTO';
 import { GroupMemberDTO } from '../DTO/GroupMemberDTO';
 import { Message } from '../interfaces/Message';
 

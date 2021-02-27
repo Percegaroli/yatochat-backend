@@ -1,6 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Chatroom } from '../../chatroom/schema/Chatroom';
+import GroupInvitation from '../interface/Invitation';
 
 export type UserDocument = User & Document;
 
@@ -30,6 +31,9 @@ export class User {
     ],
   })
   chatrooms: Array<Chatroom>;
+
+  @Prop({ required: false })
+  groupInvitations: Array<GroupInvitation>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -79,7 +79,6 @@ export class UserService {
     await userDocument
       .populate({ path: 'chatrooms', model: Chatroom.name })
       .execPopulate();
-    console.log(userDocument);
     const {
       chatrooms,
       email,

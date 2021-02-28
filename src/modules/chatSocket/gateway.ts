@@ -22,17 +22,13 @@ export class ChatGateway {
     client.join(room);
   }
 
-  @SubscribeMessage(EventEnum.NEW_MESSAGE)
+  @SubscribeMessage(EventEnum.CLIENT_SEND_NEW_MESSAGE)
   async sendMessage(
     @MessageBody() messageData: MessageData,
     @ConnectedSocket() client: Socket,
-  ): Promise<WsResponse<MessageData>> {
+  ) {
     const { message, room_id } = messageData;
-    client.to(room_id).emit(EventEnum.NEW_MESSAGE, message);
+    client.to(room_id).emit(EventEnum.CLIENT_RECEIVE_NEW_MESSAGE, message);
     await this.chatroomService.saveNewMessage(messageData);
-    return {
-      event: EventEnum.NEW_MESSAGE,
-      data: messageData,
-    };
   }
 }

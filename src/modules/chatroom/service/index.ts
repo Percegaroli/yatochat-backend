@@ -76,7 +76,6 @@ export class ChatroomService {
   }
 
   checkForValidObjectId(id: string) {
-    console.log(id);
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException({
         code: HttpStatus.BAD_REQUEST,

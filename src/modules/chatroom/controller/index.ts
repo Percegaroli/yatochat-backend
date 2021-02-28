@@ -3,6 +3,7 @@ import { ChatroomService } from '../service';
 import { NewChatroomDTO } from '../DTO/NewChatroomDTO';
 import { JwtGuard } from '../../auth/guard/jwt.guard';
 import { InviteUserDTO } from '../DTO/InviteUserDTO';
+import { JoinChatroomDTO } from '../DTO/JoinChatroomDTO';
 
 @UseGuards(JwtGuard)
 @Controller('chatroom')
@@ -27,5 +28,10 @@ export class ChatroomController {
   @Post('/invite')
   inviteUser(@Body() inviteUserDTO: InviteUserDTO) {
     return this.chatroomService.inviteUser(inviteUserDTO);
+  }
+
+  @Post('/join')
+  joinChatroom(@Body() joinChatroomDTO: JoinChatroomDTO) {
+    return this.chatroomService.joinChatroom(joinChatroomDTO);
   }
 }

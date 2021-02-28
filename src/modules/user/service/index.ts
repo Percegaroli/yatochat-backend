@@ -40,10 +40,6 @@ export class UserService {
     return newUser.save();
   }
 
-  private hashPassword(password: string) {
-    return hash(password, 10);
-  }
-
   addChatroom(chatroom: ChatroomDocument, user: UserDocument) {
     user.chatrooms.push(chatroom);
     user.save();
@@ -64,6 +60,15 @@ export class UserService {
     return this.userModel.findOne({ email: email }).exec();
   }
 
+  joinChatroom(user: UserDocument, chatroom: ChatroomDocument) {
+    user.chatrooms.push(chatroom);
+    const chatroomId = chatroom._id.toString();
+    user.groupInvitations = user.groupInvitations.filter(
+      (invitation) => invitation.groupId.toString() !== chatroomId,
+    );
+    user.save();
+  }
+
   checkForValidObjectId(id: string) {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException({
@@ -71,6 +76,10 @@ export class UserService {
         description: 'Illegal identifier',
       });
     }
+  }
+
+  private hashPassword(password: string) {
+    return hash(password, 10);
   }
 
   async createUserDetailedDTO(

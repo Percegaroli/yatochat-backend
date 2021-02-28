@@ -12,6 +12,7 @@ import { UserDocument } from 'src/modules/user/schema';
 import { ChatMember } from '../schema/ChatMember';
 import { GroupMemberDTO } from '../DTO/GroupMemberDTO';
 import { InviteUserDTO } from '../DTO/InviteUserDTO';
+import { JoinChatroomDTO } from '../DTO/JoinChatroomDTO';
 
 @Injectable()
 export class ChatroomService {
@@ -54,13 +55,20 @@ export class ChatroomService {
     const newChatroom = new this.chatroomModel(newChatroomDTO);
     newChatroom.createdAt = today;
     const user = await creator;
-    newChatroom.members.push({
-      user: user._id,
-      role: Roles.OWNER,
-      joinedAt: today,
-    });
+    newChatroom.members.push(this.createChatMember(user, Roles.OWNER));
     this.userService.addChatroom(newChatroom, user);
     return newChatroom.save();
+  }
+
+  async joinChatroom(joinChatroomDTO: JoinChatroomDTO) {
+    const { userId, groupId } = joinChatroomDTO;
+    const [user, chatroom] = await Promise.all([
+      this.userService.getUserById(userId),
+      this.chatroomModel.findById(groupId),
+    ]);
+    this.userService.joinChatroom(user, chatroom);
+    chatroom.members.push(this.createChatMember(user, Roles.MEMBER));
+    chatroom.save();
   }
 
   async saveNewMessage(messageData: MessageData) {
@@ -75,14 +83,11 @@ export class ChatroomService {
     chatroom.save();
   }
 
-  checkForValidObjectId(id: string) {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException({
-        code: HttpStatus.BAD_REQUEST,
-        description: 'Illegal identifier',
-      });
-    }
-  }
+  private createChatMember = (user: UserDocument, role: Roles): ChatMember => ({
+    user: user._id,
+    role,
+    joinedAt: new Date(),
+  });
 
   private createChatroomResumeDTO(
     chatroom: ChatroomDocument,
@@ -110,6 +115,15 @@ export class ChatroomService {
       createdAt,
       messages,
     };
+  }
+
+  checkForValidObjectId(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException({
+        code: HttpStatus.BAD_REQUEST,
+        description: 'Illegal identifier',
+      });
+    }
   }
 
   createMemberDTO(member: ChatMember): GroupMemberDTO {

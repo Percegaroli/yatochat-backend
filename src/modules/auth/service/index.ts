@@ -11,7 +11,6 @@ import { LoginPostDTO } from '../DTO/LoginPostDTO';
 import { UserService } from 'src/modules/user/service';
 import { UserDocument } from 'src/modules/user/schema';
 import { LoginResponseDTO } from '../DTO/LoginResponseDTO';
-import { Chatroom } from '../../chatroom/schema/Chatroom';
 
 @Injectable()
 export class AuthService {

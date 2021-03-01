@@ -1,5 +1,5 @@
 import { ChatroomDetailsDTO } from '../../chatroom/DTO/ChatroomDetailsDTO';
-import GroupInvitation from '../interface/Invitation';
+import { GroupInvitationDTO } from './GroupInvitationDTO';
 
 export interface UserDetailedDTO {
   id: string;
@@ -7,5 +7,5 @@ export interface UserDetailedDTO {
   lastName: string;
   chatrooms: Array<ChatroomDetailsDTO>;
   email: string;
-  groupInvitations: Array<GroupInvitation>;
+  groupInvitations: Array<GroupInvitationDTO>;
 }

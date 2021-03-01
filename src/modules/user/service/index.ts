@@ -18,6 +18,8 @@ import {
 import { AuthService } from 'src/modules/auth/service';
 import { UserDetailedDTO } from '../DTO/UserDetailedDTO';
 import { ChatroomService } from 'src/modules/chatroom/service';
+import GroupInvitation from '../interface/Invitation';
+import { GroupInvitationDTO } from '../DTO/GroupInvitationDTO';
 
 @Injectable()
 export class UserService {
@@ -99,16 +101,39 @@ export class UserService {
     const chatroomDetailsPromise = chatrooms.map((chatroom: ChatroomDocument) =>
       this.chatroomService.createChatroomDetailsDTO(chatroom),
     );
+    const groupInvitationDTOPromise = groupInvitations.map(
+      this.createGroupInvitationDTO,
+    );
     const chatroomDetailsDTO = await Promise.all(chatroomDetailsPromise);
+    const groupInvitationDTO = await Promise.all(groupInvitationDTOPromise);
     return {
       email,
       id: _id,
       name,
       lastName,
       chatrooms: chatroomDetailsDTO,
-      groupInvitations,
+      groupInvitations: groupInvitationDTO,
     };
   }
+
+  private createGroupInvitationDTO = async (
+    invitation: GroupInvitation,
+  ): Promise<GroupInvitationDTO> => {
+    const [user, chatroom] = await Promise.all([
+      this.getUserById(invitation.userId),
+      this.chatroomService.findChatroomById(invitation.groupId),
+    ]);
+    return {
+      user: {
+        name: user.name,
+        lastName: user.lastName,
+      },
+      group: {
+        name: chatroom.name,
+      },
+      invitationDate: invitation.invitationDate,
+    };
+  };
 
   createUserResume(userDocument: UserDocument): UserResumeDTO {
     const { email, name, lastName, _id } = userDocument;

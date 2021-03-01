@@ -28,9 +28,13 @@ export class ChatroomService {
     return chatrooms.map((chatroom) => this.createChatroomResumeDTO(chatroom));
   }
 
-  async getChatroomDetails(id: string) {
+  findChatroomById(id: string) {
     this.checkForValidObjectId(id);
-    const chatroom = await this.chatroomModel.findById(id).exec();
+    return this.chatroomModel.findById(id).exec();
+  }
+
+  async getChatroomDetails(id: string) {
+    const chatroom = await this.findChatroomById(id);
     return this.createChatroomDetailsDTO(chatroom);
   }
 
@@ -39,7 +43,7 @@ export class ChatroomService {
     const [invitedBy, userInvited, group] = await Promise.all([
       this.userService.getUserById(invitedById),
       this.userService.getUserByEmail(userInvitedEmail),
-      this.chatroomModel.findById(groupId),
+      this.findChatroomById(groupId),
     ]);
     userInvited.groupInvitations.push({
       groupId: group._id,
@@ -64,7 +68,7 @@ export class ChatroomService {
     const { userId, groupId } = joinChatroomDTO;
     const [user, chatroom] = await Promise.all([
       this.userService.getUserById(userId),
-      this.chatroomModel.findById(groupId),
+      this.findChatroomById(groupId),
     ]);
     this.userService.joinChatroom(user, chatroom);
     chatroom.members.push(this.createChatMember(user, Roles.MEMBER));

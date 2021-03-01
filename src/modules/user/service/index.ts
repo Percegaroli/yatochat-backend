@@ -125,10 +125,12 @@ export class UserService {
     ]);
     return {
       user: {
+        id: user._id,
         name: user.name,
         lastName: user.lastName,
       },
       group: {
+        id: user._id,
         name: chatroom.name,
       },
       invitationDate: invitation.invitationDate,

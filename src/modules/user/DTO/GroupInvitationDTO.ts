@@ -4,6 +4,7 @@ export interface GroupInvitationDTO {
     lastName: string;
   };
   group: {
+    id: string;
     name: string;
   };
   invitationDate: Date;

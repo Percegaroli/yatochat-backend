@@ -130,7 +130,7 @@ export class UserService {
         lastName: user.lastName,
       },
       group: {
-        id: user._id,
+        id: chatroom._id,
         name: chatroom.name,
       },
       invitationDate: invitation.invitationDate,

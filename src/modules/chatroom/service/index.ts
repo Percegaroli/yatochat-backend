@@ -12,7 +12,7 @@ import { UserDocument } from 'src/modules/user/schema';
 import { ChatMember } from '../schema/ChatMember';
 import { GroupMemberDTO } from '../DTO/GroupMemberDTO';
 import { InviteUserDTO } from '../DTO/InviteUserDTO';
-import { JoinChatroomDTO } from '../DTO/JoinChatroomDTO';
+import { ChatroomInvitationResponseDTO } from '../DTO/ChatroomInvitationResponseDTO';
 
 @Injectable()
 export class ChatroomService {
@@ -64,15 +64,31 @@ export class ChatroomService {
     return newChatroom.save();
   }
 
-  async joinChatroom(joinChatroomDTO: JoinChatroomDTO) {
-    const { userId, groupId } = joinChatroomDTO;
+  async joinChatroom(
+    chatroomInvitationResponseDTO: ChatroomInvitationResponseDTO,
+  ) {
+    const { userId, groupId } = chatroomInvitationResponseDTO;
     const [user, chatroom] = await Promise.all([
       this.userService.getUserById(userId),
       this.findChatroomById(groupId),
     ]);
     this.userService.joinChatroom(user, chatroom);
     chatroom.members.push(this.createChatMember(user, Roles.MEMBER));
-    chatroom.save();
+    await chatroom.save();
+  }
+
+  async rejectInvitation(
+    chatroomInvitationResponseDTO: ChatroomInvitationResponseDTO,
+  ) {
+    const { userId, groupId, invitedBy } = chatroomInvitationResponseDTO;
+    const user = await this.userService.getUserById(userId);
+    user.groupInvitations = user.groupInvitations.filter((invitation) => {
+      return !(
+        invitation.userId.toString() === invitedBy &&
+        invitation.groupId.toString() === groupId
+      );
+    });
+    await user.save();
   }
 
   async saveNewMessage(messageData: MessageData) {

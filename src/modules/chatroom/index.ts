@@ -5,6 +5,7 @@ import { ChatroomController } from './controller';
 import { ChatroomService } from './service';
 import { UserModule } from '../user';
 import { AuthModule } from '../auth';
+import { PhotoUploadModule } from '../photoUpload';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AuthModule } from '../auth';
     ]),
     forwardRef(() => UserModule),
     AuthModule,
+    PhotoUploadModule,
   ],
   controllers: [ChatroomController],
   providers: [ChatroomService],

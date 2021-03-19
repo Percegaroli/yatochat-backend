@@ -8,4 +8,5 @@ export interface UserDetailedDTO {
   chatrooms: Array<ChatroomDetailsDTO>;
   email: string;
   groupInvitations: Array<GroupInvitationDTO>;
+  photoUrl?: string;
 }

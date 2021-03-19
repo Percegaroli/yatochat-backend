@@ -34,6 +34,9 @@ export class User {
 
   @Prop({ required: false })
   groupInvitations: Array<GroupInvitation>;
+
+  @Prop({ required: false })
+  photoUrl: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

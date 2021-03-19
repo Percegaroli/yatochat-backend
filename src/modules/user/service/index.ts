@@ -20,6 +20,8 @@ import { UserDetailedDTO } from '../DTO/UserDetailedDTO';
 import { ChatroomService } from 'src/modules/chatroom/service';
 import GroupInvitation from '../interface/Invitation';
 import { GroupInvitationDTO } from '../DTO/GroupInvitationDTO';
+import { PhotoUploadProvider } from 'src/modules/photoUpload/providers/PhotoUploadProvider';
+import { UserPhotoUploadResponseDTO } from '../DTO/UserPhotoUploadDTO';
 
 @Injectable()
 export class UserService {
@@ -29,6 +31,7 @@ export class UserService {
     private readonly authService: AuthService,
     @Inject(forwardRef(() => ChatroomService))
     private readonly chatroomService: ChatroomService,
+    private readonly photoUploadProvider: PhotoUploadProvider,
   ) {}
 
   createUserAndLogin = async (newUserDTO: NewUserDTO) => {
@@ -45,6 +48,20 @@ export class UserService {
   addChatroom(chatroom: ChatroomDocument, user: UserDocument) {
     user.chatrooms.push(chatroom);
     user.save();
+  }
+
+  async uploadUserPhoto(
+    file: Express.Multer.File,
+    id: string,
+  ): Promise<UserPhotoUploadResponseDTO> {
+    const user = await this.getUserById(id);
+    const response = await this.photoUploadProvider.uploadUserPhoto(
+      file,
+      user.photoUrl,
+    );
+    user.photoUrl = response.secure_url;
+    user.save();
+    return { photoUrl: response.secure_url };
   }
 
   getUserById(id: string) {
@@ -97,6 +114,7 @@ export class UserService {
       name,
       _id,
       groupInvitations,
+      photoUrl,
     } = userDocument;
     const chatroomDetailsPromise = chatrooms.map((chatroom: ChatroomDocument) =>
       this.chatroomService.createChatroomDetailsDTO(chatroom),
@@ -113,6 +131,7 @@ export class UserService {
       lastName,
       chatrooms: chatroomDetailsDTO,
       groupInvitations: groupInvitationDTO,
+      photoUrl: photoUrl,
     };
   }
 
@@ -125,7 +144,6 @@ export class UserService {
     ]);
     return {
       user: {
-        id: user._id,
         name: user.name,
         lastName: user.lastName,
       },
@@ -138,12 +156,13 @@ export class UserService {
   };
 
   createUserResume(userDocument: UserDocument): UserResumeDTO {
-    const { email, name, lastName, _id } = userDocument;
+    const { email, name, lastName, _id, photoUrl } = userDocument;
     return {
       id: _id,
       email,
       lastName,
       name,
+      photoUrl,
     };
   }
 }

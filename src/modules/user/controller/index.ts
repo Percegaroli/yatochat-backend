@@ -24,13 +24,14 @@ export class UserController {
   }
 
   @Post(':id/photo')
+  @UseGuards(JwtGuard)
   @UseInterceptors(FileInterceptor('profile', { storage: memoryStorage() }))
   uploadUserPhoto(
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,
   ) {
     console.log(file);
-    return this.userService.uploadUserPhoto(file, id);
+    return this.userService.updateUserPhoto(file, id);
   }
 
   @Get(':id')

@@ -8,16 +8,16 @@ export class PhotoUploadProvider {
   private cloudinary = configCloudinary();
 
   uploadUserPhoto(image: Express.Multer.File, currentPhotoUrl?: string) {
-    let fileName = '';
-    if (currentPhotoUrl) {
-      const urlSplitted = currentPhotoUrl.split('/');
-      fileName = urlSplitted[urlSplitted.length - 1].split('.')[0];
-    }
-    console.log(fileName);
-    return this.uploadPhoto(image, 'user', fileName);
+    const currentPhotoName = this.getCurrentPhotoName(currentPhotoUrl);
+    return this.uploadPhoto(image, 'user', currentPhotoName);
   }
 
-  uploadPhoto = (
+  uploadGroupPhoto(image: Express.Multer.File, currentPhotoUrl?: string) {
+    const currentPhotoName = this.getCurrentPhotoName(currentPhotoUrl);
+    return this.uploadPhoto(image, 'group', currentPhotoName);
+  }
+
+  private uploadPhoto = (
     photo: Express.Multer.File,
     folder: string,
     fileName?: string,
@@ -38,4 +38,10 @@ export class PhotoUploadProvider {
       streamifier.createReadStream(photo.buffer).pipe(uploadStream);
     });
   };
+
+  private getCurrentPhotoName(currenPhotoUrl?: string) {
+    if (!currenPhotoUrl) return '';
+    const urlSplitted = currenPhotoUrl.split('/');
+    return urlSplitted[urlSplitted.length - 1].split('.')[0];
+  }
 }

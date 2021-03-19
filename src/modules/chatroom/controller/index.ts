@@ -1,9 +1,20 @@
-import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { ChatroomService } from '../service';
 import { NewChatroomDTO } from '../DTO/NewChatroomDTO';
 import { JwtGuard } from '../../auth/guard/jwt.guard';
 import { InviteUserDTO } from '../DTO/InviteUserDTO';
 import { JoinChatroomDTO } from '../DTO/JoinChatroomDTO';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 @UseGuards(JwtGuard)
 @Controller('chatroom')
@@ -33,5 +44,14 @@ export class ChatroomController {
   @Post('/join')
   joinChatroom(@Body() joinChatroomDTO: JoinChatroomDTO) {
     return this.chatroomService.joinChatroom(joinChatroomDTO);
+  }
+
+  @Post(':id/photo')
+  @UseInterceptors(FileInterceptor('picture', { storage: memoryStorage() }))
+  uploadGroupPhoto(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.chatroomService.updateGroupPhoto(id, file);
   }
 }

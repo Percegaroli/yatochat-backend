@@ -23,7 +23,7 @@ export class Chatroom {
   createdAt: Date;
 
   @Prop({ required: false })
-  photo: string;
+  photoUrl: string;
 
   @Prop()
   members: Array<ChatMember>;

@@ -4,7 +4,7 @@ import { Message } from '../interfaces/Message';
 export interface ChatroomDetailsDTO {
   id: string;
   name: string;
-  photo?: string;
+  photoUrl?: string;
   members: Array<GroupMemberDTO>;
   createdAt: Date;
   messages: Array<Message>;

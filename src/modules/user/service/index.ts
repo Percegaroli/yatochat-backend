@@ -50,7 +50,7 @@ export class UserService {
     user.save();
   }
 
-  async uploadUserPhoto(
+  async updateUserPhoto(
     file: Express.Multer.File,
     id: string,
   ): Promise<UserPhotoUploadResponseDTO> {

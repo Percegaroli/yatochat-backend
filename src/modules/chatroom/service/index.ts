@@ -13,12 +13,16 @@ import { ChatMember } from '../schema/ChatMember';
 import { GroupMemberDTO } from '../DTO/GroupMemberDTO';
 import { InviteUserDTO } from '../DTO/InviteUserDTO';
 import { JoinChatroomDTO } from '../DTO/JoinChatroomDTO';
+import { Multer } from 'multer';
+import { PhotoUploadProvider } from 'src/modules/photoUpload/providers/PhotoUploadProvider';
+import { ChangeChatroomPhotoDTO } from '../DTO/ChangeChatroomPhotoDTO';
 
 @Injectable()
 export class ChatroomService {
   constructor(
     @InjectModel(Chatroom.name) private chatroomModel: Model<ChatroomDocument>,
     private readonly userService: UserService,
+    private readonly photoUploadProvider: PhotoUploadProvider,
   ) {}
 
   async getPublicChatRooms() {
@@ -53,6 +57,22 @@ export class ChatroomService {
     userInvited.save();
   }
 
+  async updateGroupPhoto(
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<ChangeChatroomPhotoDTO> {
+    const chatroom = await this.findChatroomById(id);
+    const response = await this.photoUploadProvider.uploadGroupPhoto(
+      file,
+      chatroom.photoUrl,
+    );
+    chatroom.photoUrl = response.secure_url;
+    chatroom.save();
+    return {
+      photoUrl: response.secure_url,
+    };
+  }
+
   async createNewChatroom(newChatroomDTO: NewChatroomDTO) {
     const creator = this.userService.getUserById(newChatroomDTO.owner_id);
     const today = new Date();
@@ -78,7 +98,7 @@ export class ChatroomService {
   async saveNewMessage(messageData: MessageData) {
     const { room_id, message, user_id } = messageData;
     this.checkForValidObjectId(room_id);
-    const chatroom = await this.chatroomModel.findById(room_id);
+    const chatroom = await this.findChatroomById(room_id);
     chatroom.messages.push({
       date: new Date(),
       message,
@@ -96,12 +116,13 @@ export class ChatroomService {
   private createChatroomResumeDTO(
     chatroom: ChatroomDocument,
   ): ChatroomResumeDTO {
-    const { isPrivate, name, members, _id } = chatroom;
+    const { isPrivate, name, members, _id, photoUrl } = chatroom;
     return {
       isPrivate,
       members: members.length,
       name,
       id: _id,
+      photoUrl,
     };
   }
 
@@ -111,13 +132,14 @@ export class ChatroomService {
     await chatroom
       .populate({ path: 'members.user', model: 'User' })
       .execPopulate();
-    const { members, name, createdAt, messages, _id } = chatroom;
+    const { members, name, createdAt, messages, _id, photoUrl } = chatroom;
     return {
       id: _id,
       members: members.map((member) => this.createMemberDTO(member)),
       name,
       createdAt,
       messages,
+      photoUrl,
     };
   }
 

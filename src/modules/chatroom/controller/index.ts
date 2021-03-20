@@ -7,6 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Patch,
 } from '@nestjs/common';
 import { ChatroomService } from '../service';
 import { NewChatroomDTO } from '../DTO/NewChatroomDTO';
@@ -33,7 +34,7 @@ export class ChatroomController {
 
   @Post()
   async createNewChatroom(@Body() newChatroomDTO: NewChatroomDTO) {
-    await this.chatroomService.createNewChatroom(newChatroomDTO);
+    return this.chatroomService.createNewChatroom(newChatroomDTO);
   }
 
   @Post('/invite')
@@ -53,7 +54,7 @@ export class ChatroomController {
     return this.chatroomService.rejectInvitation(invitationResponseDTO);
   }
 
-  @Post(':id/photo')
+  @Patch(':id/photo')
   @UseInterceptors(FileInterceptor('picture', { storage: memoryStorage() }))
   uploadGroupPhoto(
     @Param('id') id: string,

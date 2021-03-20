@@ -15,6 +15,7 @@ import { InviteUserDTO } from '../DTO/InviteUserDTO';
 import { ChatroomInvitationResponseDTO } from '../DTO/ChatroomInvitationResponseDTO';
 import { PhotoUploadProvider } from 'src/modules/photoUpload/providers/PhotoUploadProvider';
 import { ChangeChatroomPhotoDTO } from '../DTO/ChangeChatroomPhotoDTO';
+import { NewChatroomResponseDTO } from '../DTO/NewChatroomResponseDTO';
 
 @Injectable()
 export class ChatroomService {
@@ -72,7 +73,9 @@ export class ChatroomService {
     };
   }
 
-  async createNewChatroom(newChatroomDTO: NewChatroomDTO) {
+  async createNewChatroom(
+    newChatroomDTO: NewChatroomDTO,
+  ): Promise<NewChatroomResponseDTO> {
     const creator = this.userService.getUserById(newChatroomDTO.owner_id);
     const today = new Date();
     const newChatroom = new this.chatroomModel(newChatroomDTO);
@@ -80,7 +83,8 @@ export class ChatroomService {
     const user = await creator;
     newChatroom.members.push(this.createChatMember(user, Roles.OWNER));
     this.userService.addChatroom(newChatroom, user);
-    return newChatroom.save();
+    await newChatroom.save();
+    return { id: newChatroom._id };
   }
 
   async joinChatroom(

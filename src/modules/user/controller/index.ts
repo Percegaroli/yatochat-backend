@@ -7,6 +7,7 @@ import {
   Param,
   UseInterceptors,
   UploadedFile,
+  Patch,
 } from '@nestjs/common';
 import { NewUserDTO } from '../DTO/NewUserDTO';
 import { UserService } from '../service';
@@ -23,7 +24,7 @@ export class UserController {
     return this.userService.createUserAndLogin(newUserDTO);
   }
 
-  @Post(':id/photo')
+  @Patch(':id/photo')
   @UseGuards(JwtGuard)
   @UseInterceptors(FileInterceptor('profile', { storage: memoryStorage() }))
   uploadUserPhoto(
